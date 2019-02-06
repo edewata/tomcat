@@ -200,6 +200,8 @@
   <!-- Classpaths -->
   <path id="compile.classpath">
     <pathelement location="${jdt.jar}"/>
+    <!-- ant.jar reference for maven build to use -->
+    <pathelement location="${ant.jar}"/>
   </path>
 
   <path id="tomcat.classpath">
@@ -659,7 +661,7 @@
     </copy>
   </target>
 
-  <target name="compile" depends="download-compile,validate">
+  <target name="compile" depends="build-prepare,compile-prepare">
     <!-- Compile internal server components -->
     <javac srcdir="java" destdir="${tomcat.classes}"
            debug="${compile.debug}"
@@ -1678,7 +1680,7 @@
           description="Build all extras packages">
   </target>
 
-  <target name="dist-prepare" depends="download-dist">
+  <target name="dist-prepare">
     <mkdir dir="${tomcat.dist}"/>
     <mkdir dir="${tomcat.dist}/bin"/>
     <mkdir dir="${tomcat.dist}/conf"/>
@@ -1729,40 +1731,11 @@
 
     <!-- Correct permissions and line endings on "bin" scripts -->
     <fixcrlf srcdir="${tomcat.dist}/bin" includes="*.sh"  eol="lf"   encoding="ISO-8859-1" fixlast="false" />
-    <fixcrlf srcdir="${tomcat.dist}/bin" includes="*.bat" eol="crlf" encoding="ISO-8859-1" fixlast="false" />
     <chmod      dir="${tomcat.dist}/bin" includes="*.sh"  perm="+x"/>
-
-    <!-- Windows binaries -->
-    <!-- 32 bit -->
-    <copy file="${commons-daemon.home}/windows/prunsrv.exe"
-        tofile="${tomcat.dist}/bin/tomcat${version.major}.exe" />
-    <copy file="${commons-daemon.home}/windows/prunmgr.exe"
-        tofile="${tomcat.dist}/bin/tomcat${version.major}w.exe" />
-    <!-- 64 bit amd -->
-    <copy file="${commons-daemon.home}/windows/amd64/prunsrv.exe"
-        tofile="${tomcat.dist}/bin/x64/tomcat${version.major}.exe" />
-    <!-- tc native -->
-    <copy todir="${tomcat.dist}/bin">
-      <fileset dir="${tomcat-native.home}/bin">
-        <include name="*.dll"/>
-        <include name="**/*.dll"/>
-      </fileset>
-    </copy>
-
-    <!-- Source bundles for native components -->
-    <copy tofile="${tomcat.dist}/bin/tomcat-native.tar.gz"
-            file="${tomcat-native.tar.gz}" />
-    <copy tofile="${tomcat.dist}/bin/commons-daemon-native.tar.gz"
-            file="${commons-daemon.native.src.tgz}" />
-
-    <!-- platform README files -->
-    <echo append="false" file="${tomcat.dist}/bin/x64/README">
-Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
-    </echo>
 
   </target>
 
-  <target name="javadoc" depends="dist-source,extras-webservices-prepare"
+  <target name="javadoc" depends="dist-source"
     description="Create the Tomcat javadoc" >
     <javadoc packagenames="javax.servlet.*"
       excludepackagenames="javax.servlet.jsp.*"
@@ -1782,7 +1755,6 @@ Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
       failonwarning="true">
       <classpath>
         <path refid="compile.classpath"/>
-        <path refid="tomcat.webservices.classpath"/>
         <path location="${ant.core.lib}"/>
       </classpath>
     </javadoc>
@@ -1803,7 +1775,6 @@ Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
       failonwarning="true">
       <classpath>
         <path refid="compile.classpath"/>
-        <path refid="tomcat.webservices.classpath"/>
         <path location="${ant.core.lib}"/>
       </classpath>
     </javadoc>
@@ -1824,7 +1795,6 @@ Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
       failonwarning="true">
       <classpath>
         <path refid="compile.classpath"/>
-        <path refid="tomcat.webservices.classpath"/>
         <path location="${ant.core.lib}"/>
       </classpath>
     </javadoc>
@@ -1845,7 +1815,6 @@ Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
       failonwarning="true">
       <classpath>
         <path refid="compile.classpath"/>
-        <path refid="tomcat.webservices.classpath"/>
         <path location="${ant.core.lib}"/>
       </classpath>
     </javadoc>
@@ -1865,7 +1834,6 @@ Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
       failonwarning="true">
       <classpath>
         <path refid="compile.classpath"/>
-        <path refid="tomcat.webservices.classpath"/>
         <path location="${ant.core.lib}"/>
       </classpath>
       <link href="../servletapi"/>
@@ -1878,6 +1846,7 @@ Apache Tomcat ${version} native binaries for Win64 AMD64/EMT64 platform.
       <packageset dir="${tomcat.dist}/src/java/">
         <include name="org/**"/>
         <exclude name="org/apache/el/parser/**"/>
+        <exclude name="org/apache/naming/factory/webservices/**"/>
       </packageset>
       <!--jdbc-pool src files for javadoc-->
       <packageset dir="${tomcat.dist}/src/modules/jdbc-pool/src/main/java"/>

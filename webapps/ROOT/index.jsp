@@ -20,7 +20,6 @@ java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy");
 request.setAttribute("year", sdf.format(new java.util.Date()));
 request.setAttribute("tomcatUrl", "http://tomcat.apache.org/");
 request.setAttribute("tomcatDocUrl", "/docs/");
-request.setAttribute("tomcatExamplesUrl", "/examples/");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +37,6 @@ request.setAttribute("tomcatExamplesUrl", "/examples/");
                 <span id="nav-home"><a href="${tomcatUrl}">Home</a></span>
                 <span id="nav-hosts"><a href="${tomcatDocUrl}">Documentation</a></span>
                 <span id="nav-config"><a href="${tomcatDocUrl}config/">Configuration</a></span>
-                <span id="nav-examples"><a href="${tomcatExamplesUrl}">Examples</a></span>
                 <span id="nav-wiki"><a href="http://wiki.apache.org/tomcat/FrontPage">Wiki</a></span>
                 <span id="nav-lists"><a href="${tomcatUrl}lists.html">Mailing Lists</a></span>
                 <span id="nav-help"><a href="${tomcatUrl}findhelp.html">Find Help</a></span>
@@ -92,12 +90,11 @@ request.setAttribute("tomcatExamplesUrl", "/examples/");
                 </div>
                 <div class="col25">
                     <div class="container">
-                        <p><a href="${tomcatExamplesUrl}">Examples</a></p>
+                        <p><a href="http://wiki.apache.org/tomcat/Specifications">Servlet Specifications</a></p>
                     </div>
                 </div>
                 <div class="col25">
                     <div class="container">
-                        <p><a href="http://wiki.apache.org/tomcat/Specifications">Servlet Specifications</a></p>
                         <p><a href="http://wiki.apache.org/tomcat/TomcatVersions">Tomcat Versions</a></p>
                     </div>
                 </div>

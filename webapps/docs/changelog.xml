@@ -44,6 +44,35 @@
   They eventually become mixed with the numbered issues. (I.e., numbered
   issues do not "pop up" wrt. others).
 -->
+<section name="Tomcat 9.0.7-redhat (csutherl)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Improve handling of overflow in the UTF-8 decoder with supplementary
+        characters. (markt)
+      </fix>
+      <fix>
+        Register MBean when DataSource Resource <code>
+        type="javax.sql.XADataSource"</code>. Patch provided by Masafumi Miura.
+        (csutherl)
+      </fix>
+      <add>
+        <bug>62273</bug>: Implement configuration options to work-around
+        specification non-compliant user agents (including all the major
+        browsers) that do not correctly %nn encode URI paths and query strings
+        as required by RFC 7230 and RFC 3986. (markt)
+      </add>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Fix <code>NullPointerException</code> thrown from <code>
+        replaceSystemProperties()</code> when trying to log messages. (csutherl)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
 <section name="Tomcat 9.0.7 (markt)">
   <subsection name="Catalina">
     <changelog>

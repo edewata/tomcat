@@ -1,0 +1,15 @@
+# Created by buildmetadata-maven-plugin 1.7.0 ( SHA: 6f444cae ) 
+build.artifactId=tomcat
+build.groupId=org.apache.tomcat
+build.java.compiler=HotSpot 64-Bit Tiered Compilers
+build.java.runtime.name=OpenJDK Runtime Environment
+build.java.runtime.version=1.8.0_171-b10
+build.java.vendor=Oracle Corporation
+build.java.vm=OpenJDK 64-Bit Server VM
+build.maven.execution.cmdline=-C -Drepo-reporting-removal\=true -Dversion.incremental.suffix\=redhat -D"maven.test.failure.ignore\=true" deploy
+build.maven.version=3.2.3
+build.scmRevision.date=06.06.2018
+build.scmRevision.id=689fc98dcd6ce424fdd69d576133b38455bfdc16
+build.scmRevision.url=scm\:git\:git\://git@github.com/apache/tomcat.git/mvn-modules/tomcat
+build.version=9.0.7.redhat-10
+build.version.full=9.0.7.redhat-10r689fc98dcd6ce424fdd69d576133b38455bfdc16

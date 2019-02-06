@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Server port="8005" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.core.LoadExternalPropertiesListener"
+    file.0="test/redhat/LoadExternalPropertiesListener/test1.properties"
+    file.1="test/redhat/LoadExternalPropertiesListener/test2.properties"
+    loadFirst="true" overwrite="false" />
+</Server>

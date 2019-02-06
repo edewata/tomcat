@@ -19,6 +19,8 @@ package org.apache.tomcat.dbcp.dbcp2.managed;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.tomcat.dbcp.dbcp2.DelegatingConnection;
 import org.apache.tomcat.dbcp.pool2.ObjectPool;
@@ -48,6 +50,7 @@ public class ManagedConnection<C extends Connection> extends DelegatingConnectio
     private final boolean accessToUnderlyingConnectionAllowed;
     private TransactionContext transactionContext;
     private boolean isSharedConnection;
+    private Lock lock;
 
     public ManagedConnection(final ObjectPool<C> pool,
             final TransactionRegistry transactionRegistry,
@@ -56,6 +59,7 @@ public class ManagedConnection<C extends Connection> extends DelegatingConnectio
         this.pool = pool;
         this.transactionRegistry = transactionRegistry;
         this.accessToUnderlyingConnectionAllowed = accessToUnderlyingConnectionAllowed;
+        this.lock = new ReentrantLock();
         updateTransactionStatus();
     }
 
@@ -162,11 +166,18 @@ public class ManagedConnection<C extends Connection> extends DelegatingConnectio
             try {
                 // Don't actually close the connection if in a transaction. The
                 // connection will be closed by the transactionComplete method.
+                //
+                // DBCP-484 we need to make sure setClosedInternal(true) being
+                // invoked if transactionContext is not null as this value will
+                // be modified by the transactionComplete method which could run
+                // in the different thread with the transaction calling back.
+                lock.lock();
                 if (transactionContext == null) {
                     super.close();
                 }
             } finally {
                 setClosedInternal(true);
+                lock.unlock();
             }
         }
     }
@@ -186,7 +197,9 @@ public class ManagedConnection<C extends Connection> extends DelegatingConnectio
     }
 
     protected void transactionComplete() {
+        lock.lock();
         transactionContext = null;
+        lock.unlock();
 
         // If we were using a shared connection, clear the reference now that
         // the transaction has completed

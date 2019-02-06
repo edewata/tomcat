@@ -57,6 +57,10 @@ public class SetPropertiesRule extends Rule {
             }
         }
 
+        // Since I'm using this more than once, set a boolean
+        boolean isLoadExternalPropertiesListener = top.getClass().getName()
+                .equals("org.apache.catalina.core.LoadExternalPropertiesListener");
+
         for (int i = 0; i < attributes.getLength(); i++) {
             String name = attributes.getLocalName(i);
             if ("".equals(name)) {
@@ -69,7 +73,24 @@ public class SetPropertiesRule extends Rule {
                         "} Setting property '" + name + "' to '" +
                         value + "'");
             }
-            if (!digester.isFakeAttribute(top, name)
+            // If we see the LoadExternalPropertiesListener setting file.N attributes,
+            // intercept them and handle differently because we need to translate file.1
+            // into correct method call
+            if (isLoadExternalPropertiesListener && name.startsWith("file.")) {
+                Integer index;
+
+                try {
+                    index = Integer.parseInt(name.split("\\.")[1]);
+                } catch (NumberFormatException nfe) {
+                    digester.log.warn("[SetPropertiesRule]{" + digester.match +
+                            "} Setting property '" + name + "' to '" +
+                            value + "' did not find a matching property.");
+                    continue;
+                }
+                IntrospectionUtils.callMethodN(top, "addFiles",
+                        new Object[] {index, value},
+                        new Class<?>[] {index.getClass(), value.getClass()});
+            } else if (!digester.isFakeAttribute(top, name)
                     && !IntrospectionUtils.setProperty(top, name, value)
                     && digester.getRulesValidation()) {
                 digester.log.warn("[SetPropertiesRule]{" + digester.match +
@@ -78,6 +99,15 @@ public class SetPropertiesRule extends Rule {
             }
         }
 
+        // Now that all of the properties have been read from the listener, check loadFirst to see
+        // if we should perform property replacement before continuing to parse the server.xml
+        if (isLoadExternalPropertiesListener) {
+            boolean loadFirst = (boolean) IntrospectionUtils.getProperty(top, "loadFirst");
+            if (loadFirst) {
+                IntrospectionUtils.callMethod1(top, "loadProperties",
+                        false, "java.lang.Boolean", top.getClass().getClassLoader());
+            }
+        }
     }
 
 

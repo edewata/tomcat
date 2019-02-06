@@ -84,6 +84,7 @@ public class Digester extends DefaultHandler2 {
 
     protected static IntrospectionUtils.PropertySource propertySource;
     private static boolean propertySourceSet = false;
+    protected static final StringManager sm = StringManager.getManager(Digester.class);
 
     static {
         String className = System.getProperty("org.apache.tomcat.util.digester.PROPERTY_SOURCE");
@@ -309,7 +310,6 @@ public class Digester extends DefaultHandler2 {
      * The Log to which most logging calls will be made.
      */
     protected Log log = LogFactory.getLog(Digester.class);
-    protected static final StringManager sm = StringManager.getManager(Digester.class);
 
     /**
      * The Log to which all SAX event related logging calls will be made.
@@ -328,17 +328,31 @@ public class Digester extends DefaultHandler2 {
     public static void replaceSystemProperties() {
         Log log = LogFactory.getLog(Digester.class);
         if (propertySource != null) {
-            IntrospectionUtils.PropertySource[] propertySources =
-                    new IntrospectionUtils.PropertySource[] { propertySource };
+            IntrospectionUtils.PropertySource[] propertySources = new IntrospectionUtils.PropertySource[] {
+                    propertySource, new IntrospectionUtils.PropertySource() {
+                        @Override
+                        public String getProperty(String key) {
+                            return System.getProperty(key);
+                        }
+                    } };
             Properties properties = System.getProperties();
             Set<String> names = properties.stringPropertyNames();
             for (String name : names) {
                 String value = System.getProperty(name);
+                String newValue = value;
                 if (value != null) {
                     try {
-                        String newValue = IntrospectionUtils.replaceProperties(value, null, propertySources);
-                        if (!value.equals(newValue)) {
-                            System.setProperty(name, newValue);
+                        int iterationCount = 0;
+                        do {
+                            iterationCount++;
+                            value = newValue;
+                            newValue = IntrospectionUtils.replaceProperties(value, null, propertySources);
+                            if (!value.equals(newValue)) {
+                                System.setProperty(name, newValue);
+                            }
+                        } while (!value.equals(newValue) && iterationCount < 20);
+                        if (iterationCount >= 20) {
+                            log.warn("System property [" + name + "] failed to update and remains [" + value + "]");
                         }
                     } catch (Exception e) {
                         log.warn(sm.getString("digester.failedToUpdateSystemProperty", name, value), e);
@@ -1924,9 +1938,18 @@ public class Digester extends DefaultHandler2 {
         for (int i = 0; i < nAttributes; ++i) {
             String value = newAttrs.getValue(i);
             try {
-                String newValue = IntrospectionUtils.replaceProperties(value, null, source);
-                if (value != newValue) {
-                    newAttrs.setValue(i, newValue);
+                int iterationCount = 0;
+                String newValue = value;
+                do {
+                    iterationCount++;
+                    value = newValue;
+                    newValue = IntrospectionUtils.replaceProperties(value, null, source);
+                    if (!value.equals(newValue)) {
+                        newAttrs.setValue(i, newValue);
+                    }
+                } while (!value.equals(newValue) && iterationCount < 20);
+                if (iterationCount >= 20) {
+                    log.warn("Attribute [" + newAttrs.getLocalName(i) + "] failed to update and remains [" + value + "]");
                 }
             } catch (Exception e) {
                 log.warn(sm.getString("digester.failedToUpdateAttributes", newAttrs.getLocalName(i), value), e);
@@ -1945,14 +1968,22 @@ public class Digester extends DefaultHandler2 {
      */
     private StringBuilder updateBodyText(StringBuilder bodyText) {
         String in = bodyText.toString();
-        String out;
+        String out = in;
         try {
-            out = IntrospectionUtils.replaceProperties(in, null, source);
+            int iterationCount = 0;
+            do {
+                iterationCount++;
+                in = out;
+                out = IntrospectionUtils.replaceProperties(in, null, source);
+            } while (!out.equals(in) && iterationCount < 20);
+            if (iterationCount >= 20) {
+                return bodyText;
+            }
         } catch (Exception e) {
             return bodyText; // return unchanged data
         }
 
-        if (out == in) {
+        if (out.equals(in)) {
             // No substitutions required. Don't waste memory creating
             // a new buffer
             return bodyText;

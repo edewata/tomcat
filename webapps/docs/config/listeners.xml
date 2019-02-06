@@ -574,6 +574,61 @@
 
   </subsection>
 
+  <subsection name="Load external properties files - org.apache.catalina.core.LoadExternalPropertiesListener">
+
+    <p>The <strong>Load External Properties Lifecycle Listener</strong> loads
+    properties files specified by the listener's <code>file.N</code> attributes
+    in the server.xml</p>
+
+    <p>The listener must be nested within a <a href="server.html">Server</a>
+    element, and it is recommended that this listener be the first nested
+    element in the <a href="server.html">Server</a>. XML is processed in the
+    order it appears, and defining this listener first allows properties to
+    be defined and used later in the file.</p>
+
+    <p>The following additional attributes are supported by the <strong>Load
+    External Properties Lifecycle Listener</strong>:</p>
+
+    <attributes>
+
+      <attribute name="file.N" required="true">
+
+        <p>External files to include. This is a special attribute that uses a
+        dynamic name, allowing for up to 100 files include with values for N
+        ranging from 0 to 99. Any values beyond 99 will result in files not
+        being included and a warning being logged. These files will be
+        loaded in order based on the index, N.</p>
+
+        <p>For example, you could add two file attributes to the listener
+        such as:
+
+        <code>file.0="/path/to/file1.properties"
+        file.1="/path/to/file2.properties"</code>
+        </p>
+
+      </attribute>
+
+      <attribute name="overwrite" required="false">
+
+        <p> Controls if previously defined system properties may be ovewritten.
+        The default behavior is <code>true</code>, allowing for overwriting
+        system properties.</p>
+
+      </attribute>
+
+      <attribute name="loadFirst" required="false">
+
+        <p>Determines if any specified external files will be loaded before the
+        rest of <code>server.xml</code>. The default is <code>false</code>,
+        indicating that the contents of <code>server.xml</code> will be
+        loaded and procesed before external files.</p>
+
+      </attribute>
+
+    </attributes>
+
+  </subsection>
+
 </section>
 
 </body>
